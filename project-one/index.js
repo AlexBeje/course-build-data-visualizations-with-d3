@@ -13,7 +13,6 @@ form.addEventListener("submit", (e) => {
     db.collection("expenses")
       .add(item)
       .then((res) => {
-        console.log("😄", res);
         error.textContent = "";
         name.value = "";
         cost.value = "";
