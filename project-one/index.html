@@ -43,6 +43,9 @@
               <div class="input-field center">
                 <button class="btn-large pink white-text">Add Item</button>
               </div>
+              <div class="input-field center">
+                <p class="red-text" id="error"></p>
+              </div>
             </div>
           </form>
         </div>
@@ -69,8 +72,6 @@
       // Initialize Firebase
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
-      const settings = { timestampsInSnapshots: true };
-      db.settings(settings);
     </script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.0.0/d3.min.js"
