@@ -16,6 +16,15 @@
       header {
         margin-bottom: 40px;
       }
+      .tip {
+        padding: 10px;
+        background: #333;
+        color: #fff;
+      }
+      .tip .delete {
+        color: hotpink;
+        font-size: 0.8em;
+      }
     </style>
     <title>Ninja Wonga</title>
   </head>
@@ -73,18 +82,11 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
     </script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.0.0/d3.min.js"
-      integrity="sha512-9uJB6ZmL2UhBkQH2X1B+lbEFIDtlauO0fPUp0Rdo6Tz21a1awgSD+FfSykvd+gD3c8WQrwWeaEgMkPsDep3P8w=="
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
     <!-- Compiled and minified JavaScript -->
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"
-      integrity="sha512-wNH6xsp2n8CfB91nrBtfc4sfLwYPBMjSWVUwQOp60AYYXH6i8yCwuKFZ4rgK2i6pQek/b+bSyR7b01/922IBzQ=="
-      crossorigin="anonymous"
-    ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
     <script src="index.js"></script>
     <script src="graph.js"></script>
   </body>

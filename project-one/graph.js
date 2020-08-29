@@ -1,4 +1,4 @@
-// create the dimensions
+// create the dimed, i, nnsions
 const dims = { height: 300, width: 300, radius: 150 };
 // define the center of the chart
 const cent = { x: dims.width / 2 + 5, y: dims.height / 2 + 5 };
@@ -18,31 +18,38 @@ const pie = d3
   .sort(null)
   .value((d) => d.cost);
 
-const angles = pie([
-  { name: "rent", cost: 500 },
-  { name: "bills", cost: 300 },
-  { name: "gamming", cost: 200 },
-]);
-
 const arcPath = d3
   .arc()
   .outerRadius(dims.radius)
   .innerRadius(dims.radius / 2);
 
 // ordinal scale creation, set one of the d3 default schemes
-const colour = d3.scaleOrdinal(d3["schemeSet3"]);
+const color = d3.scaleOrdinal(d3["schemeSet3"]);
 
 // legend setup
 const legendGroup = svg
   .append("g")
   .attr("transform", `translate(${dims.width + 40}, 10)`);
 
-const legend = d3.legendColor().shape("cirlce").shapePadding(10).scale(colour);
+// plugins definition
+const legend = d3.legendColor().shape("cirlce").shapePadding(10).scale(color);
+
+const tip = d3
+  .tip()
+  .attr("class", "tip card")
+  .html((d) => {
+    let content = `<div class="name">${d.data.name}</div>`;
+    content += `<div class="cost">${d.data.cost}</div>`;
+    content += `<div class="delete">Click slice to delete</div>`;
+    return content;
+  });
+
+graph.call(tip);
 
 // update function
 const update = (data) => {
-  // update colour scale domain
-  colour.domain(data.map((d) => d.name));
+  // update color scale domain
+  color.domain(data.map((d) => d.name));
 
   // update and call legend
   legendGroup.call(legend);
@@ -68,13 +75,26 @@ const update = (data) => {
     .attr("class", "arc")
     .attr("stroke", "#fff")
     .attr("stroke-width", 3)
-    .attr("fill", (d) => colour(d.data.name))
+    .attr("fill", (d) => color(d.data.name))
     .each(function (d) {
       this._current = d;
     })
     .transition()
     .duration(750)
     .attrTween("d", arcTweenEnter);
+
+  // add events
+  graph
+    .selectAll("path")
+    .on("mouseover", (d, i, n) => {
+      tip.show(d, n[i]);
+      handleMouseOver(d, i, n);
+    })
+    .on("mouseout", (d, i, n) => {
+      tip.hide();
+      handleMouseOut(d, i, n);
+    })
+    .on("click", handleClick);
 };
 
 // data array firestore
@@ -133,3 +153,23 @@ function arcTweenUpdate(d) {
     return arcPath(i(t));
   };
 }
+
+// event handlers
+const handleMouseOver = (d, i, n) => {
+  d3.select(n[i])
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", "#fff");
+};
+
+const handleMouseOut = (d, i, n) => {
+  d3.select(n[i])
+    .transition("changeSliceFill")
+    .duration(300)
+    .attr("fill", color(d.data.name));
+};
+
+const handleClick = (d) => {
+  const id = d.data.id;
+  db.collection("expenses").doc(id).delete();
+};
