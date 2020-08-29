@@ -32,10 +32,22 @@ const arcPath = d3
 // ordinal scale creation, set one of the d3 default schemes
 const colour = d3.scaleOrdinal(d3["schemeSet3"]);
 
+// legend setup
+const legendGroup = svg
+  .append("g")
+  .attr("transform", `translate(${dims.width + 40}, 10)`);
+
+const legend = d3.legendColor().shape("cirlce").shapePadding(10).scale(colour);
+
 // update function
 const update = (data) => {
   // update colour scale domain
   colour.domain(data.map((d) => d.name));
+
+  // update and call legend
+  legendGroup.call(legend);
+
+  legendGroup.selectAll("text").attr("fill", "#fff");
 
   // join pie data to path elements
   const paths = graph.selectAll("path").data(pie(data));
