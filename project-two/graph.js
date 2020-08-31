@@ -29,17 +29,43 @@ const yAxisGroup = graph.append("g").attr("class", "y-axis");
 // d3 line path generator
 const line = d3
   .line()
-  .x((d) => x(new Date(d.date)))
-  .y((d) => y(d.distance));
+  //.curve(d3.curveCardinal)
+  .x(function (d) {
+    return x(new Date(d.date));
+  })
+  .y(function (d) {
+    return y(d.distance);
+  });
 
 // line path element
 const path = graph.append("path");
 
+// create dotted line group and append to graph
+const dottedLines = graph
+  .append("g")
+  .attr("class", "lines")
+  .style("opacity", 0);
+
+// create x dotted line and append to dotted line group
+const xDottedLine = dottedLines
+  .append("line")
+  .attr("stroke", "#aaa")
+  .attr("stroke-width", 1)
+  .attr("stroke-dasharray", 4);
+
+// create y dotted line and append to dotted line group
+const yDottedLine = dottedLines
+  .append("line")
+  .attr("stroke", "#aaa")
+  .attr("stroke-width", 1)
+  .attr("stroke-dasharray", 4);
+
 // update function
 const update = (data) => {
-  data = data.filter((d) => d.activity === activity);
+  // filter data based on current activity
+  data = data.filter((item) => item.activity == activity);
 
-  // sort data based on objects
+  // sort the data based on date objects
   data.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   // set scale domains
@@ -51,10 +77,10 @@ const update = (data) => {
     .data([data])
     .attr("fill", "none")
     .attr("stroke", "#00bfa5")
-    .attr("stroke-width", 2)
+    .attr("stroke-width", "2")
     .attr("d", line);
 
-  // create circles for objects
+  // create circles for points
   const circles = graph.selectAll("circle").data(data);
 
   // remove unwanted points
@@ -62,6 +88,7 @@ const update = (data) => {
 
   // update current points
   circles
+    .attr("r", "4")
     .attr("cx", (d) => x(new Date(d.date)))
     .attr("cy", (d) => y(d.distance));
 
@@ -69,11 +96,12 @@ const update = (data) => {
   circles
     .enter()
     .append("circle")
-    .attr("r", 4)
+    .attr("r", "4")
     .attr("cx", (d) => x(new Date(d.date)))
     .attr("cy", (d) => y(d.distance))
     .attr("fill", "#ccc");
 
+  // add event listeners to circle (and show dotted lines)
   graph
     .selectAll("circle")
     .on("mouseover", (d, i, n) => {
@@ -82,13 +110,29 @@ const update = (data) => {
         .duration(100)
         .attr("r", 8)
         .attr("fill", "#fff");
+      // set x dotted line coords (x1,x2,y1,y2)
+      xDottedLine
+        .attr("x1", x(new Date(d.date)))
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", graphHeight)
+        .attr("y2", y(d.distance));
+      // set y dotted line coords (x1,x2,y1,y2)
+      yDottedLine
+        .attr("x1", 0)
+        .attr("x2", x(new Date(d.date)))
+        .attr("y1", y(d.distance))
+        .attr("y2", y(d.distance));
+      // show the dotted line group (opacity)
+      dottedLines.style("opacity", 1);
     })
     .on("mouseleave", (d, i, n) => {
       d3.select(n[i])
         .transition()
         .duration(100)
         .attr("r", 4)
-        .attr("fill", "#ccc");
+        .attr("fill", "#fff");
+      // hide the dotted line group (opacity)
+      dottedLines.style("opacity", 0);
     });
 
   // create axes
@@ -97,13 +141,13 @@ const update = (data) => {
   const yAxis = d3
     .axisLeft(y)
     .ticks(4)
-    .tickFormat((d) => `${d}m`);
+    .tickFormat((d) => d + "m");
 
   // call axes
   xAxisGroup.call(xAxis);
   yAxisGroup.call(yAxis);
 
-  //rotate axis text
+  // rotate axis text
   xAxisGroup
     .selectAll("text")
     .attr("transform", "rotate(-40)")
@@ -113,27 +157,25 @@ const update = (data) => {
 // data and firestore
 var data = [];
 
-db.collection("activities")
-  .orderBy("date")
-  .onSnapshot((res) => {
-    res.docChanges().forEach((change) => {
-      const doc = { ...change.doc.data(), id: change.doc.id };
+db.collection("activities").onSnapshot((res) => {
+  res.docChanges().forEach((change) => {
+    const doc = { ...change.doc.data(), id: change.doc.id };
 
-      switch (change.type) {
-        case "added":
-          data.push(doc);
-          break;
-        case "modified":
-          const index = data.findIndex((item) => item.id == doc.id);
-          data[index] = doc;
-          break;
-        case "removed":
-          data = data.filter((item) => item.id !== doc.id);
-          break;
-        default:
-          break;
-      }
-    });
-
-    update(data);
+    switch (change.type) {
+      case "added":
+        data.push(doc);
+        break;
+      case "modified":
+        const index = data.findIndex((item) => item.id == doc.id);
+        data[index] = doc;
+        break;
+      case "removed":
+        data = data.filter((item) => item.id !== doc.id);
+        break;
+      default:
+        break;
+    }
   });
+
+  update(data);
+});
