@@ -28,6 +28,7 @@ const yAxisGroup = graph.append("g").attr("class", "y-axis");
 
 // update function
 const update = (data) => {
+  data = data.filter((d) => d.activity === activity);
   // set scale domains
   x.domain(d3.extent(data, (d) => new Date(d.date)));
   y.domain([0, d3.max(data, (d) => d.distance)]);
@@ -53,7 +54,7 @@ const update = (data) => {
     .attr("fill", "#ccc");
 
   // create axes
-  const xAxis = d3.axisBottom(x).ticks(12).tickFormat(d3.timeFormat("%b %d"));
+  const xAxis = d3.axisBottom(x).ticks(4).tickFormat(d3.timeFormat("%b %d"));
 
   const yAxis = d3
     .axisLeft(y)
