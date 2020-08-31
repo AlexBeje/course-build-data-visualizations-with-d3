@@ -26,12 +26,33 @@ const xAxisGroup = graph
 
 const yAxisGroup = graph.append("g").attr("class", "y-axis");
 
+// d3 line path generator
+const line = d3
+  .line()
+  .x((d) => x(new Date(d.date)))
+  .y((d) => y(d.distance));
+
+// line path element
+const path = graph.append("path");
+
 // update function
 const update = (data) => {
   data = data.filter((d) => d.activity === activity);
+
+  // sort data based on objects
+  data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
   // set scale domains
   x.domain(d3.extent(data, (d) => new Date(d.date)));
   y.domain([0, d3.max(data, (d) => d.distance)]);
+
+  // update path data
+  path
+    .data([data])
+    .attr("fill", "none")
+    .attr("stroke", "#00bfa5")
+    .attr("stroke-width", 2)
+    .attr("d", line);
 
   // create circles for objects
   const circles = graph.selectAll("circle").data(data);
@@ -52,6 +73,23 @@ const update = (data) => {
     .attr("cx", (d) => x(new Date(d.date)))
     .attr("cy", (d) => y(d.distance))
     .attr("fill", "#ccc");
+
+  graph
+    .selectAll("circle")
+    .on("mouseover", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 8)
+        .attr("fill", "#fff");
+    })
+    .on("mouseleave", (d, i, n) => {
+      d3.select(n[i])
+        .transition()
+        .duration(100)
+        .attr("r", 4)
+        .attr("fill", "#ccc");
+    });
 
   // create axes
   const xAxis = d3.axisBottom(x).ticks(4).tickFormat(d3.timeFormat("%b %d"));
